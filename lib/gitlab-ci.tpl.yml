@@ -1,0 +1,81 @@
+image: node:12
+
+before_script:
+    - 'pwd'
+    - chmod +x ./node_modules/gitlab-cicd-create/lib/shell/install.sh     
+    - ./node_modules/gitlab-cicd-create/lib/shell/install.sh
+
+# 预览/上线
+stages:    
+  - 准备   
+  - 提测
+  - 上线  
+  - 回滚
+
+
+# 单元测试
+1. 单元测试: 
+  stage: 准备 
+  script:    
+    - yarn run test
+
+  tags: 
+    - node:12
+  
+  
+2. 线上打包:
+  stage: 准备
+  script:      
+    - yarn run build
+  tags: 
+    - node:12
+  artifacts:    
+    paths:
+      - build/
+
+
+## 提测
+1. 上传测试机: 
+  stage: 提测
+  tags: 
+    - node:12  
+  script: 
+    - 'echo "uploading begin"'  
+    - yarn run preview
+    
+  dependencies: 
+    - 2. 线上打包
+  when: manual  
+
+2. merge request:
+  before_script: []   # We do not need any setup work, let's remove the global one (if any)
+  tags: 
+    - node:12
+  stage: 提测  
+  script:
+    - chmod +x ./node_modules/gitlab-cicd-create/lib/shell/merge_request.sh 
+    - ./node_modules/gitlab-cicd-create/lib/shell/merge_request.sh
+  when: manual
+
+## 提测
+部署代码:
+  stage: 上线
+  tags: 
+    - node:12  
+  script:    
+    
+    # 用preview代替
+    - yarn run preview
+    - chmod +x ./node_modules/gitlab-cicd-create/lib/shell/create_tag.sh
+    - ./node_modules/gitlab-cicd-create/lib/shell/create_tag.sh
+  when: manual
+    
+部署上个版本:
+  stage: 回滚
+  before_script: []
+  tags: 
+    - node:12
+  script: 
+    - chmod +x ./node_modules/gitlab-cicd-create/lib/shell/rollback.sh 
+    - ./node_modules/gitlab-cicd-create/lib/shell/rollback.sh
+  when: manual

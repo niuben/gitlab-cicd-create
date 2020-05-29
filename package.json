@@ -1,0 +1,14 @@
+{
+  "name": "gitlab-cicd-create",
+  "version": "0.0.5",
+  "description": "gitlab ci/cd模板生成",
+  "main": "./lib/index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "",
+  "license": "ISC",
+  "bin": {
+    "gitlab-cicd-create": "lib/index.js"
+  }
+}
